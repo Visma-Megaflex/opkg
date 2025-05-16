@@ -274,7 +274,11 @@ char *pkg_download_signature(pkg_t * pkg)
     sprintf_alloc(&sig_url, "%s.%s", pkg_url, sig_ext);
     free(pkg_url);
 
-    sig_file = opkg_download_cache(sig_url, NULL, NULL);
+    sig_file = get_cache_location(sig_url);
+    if (!file_exists(sig_file)) {
+        free(sig_file);
+        sig_file = opkg_download_cache(sig_url, NULL, NULL);
+    }
     free(sig_url);
 
     return sig_file;

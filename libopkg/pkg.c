@@ -1585,18 +1585,24 @@ int pkg_verify(pkg_t * pkg)
     return 0;
 
  fail:
-    free(local_sig_filename);
     if (!opkg_config->force_checksum)
     {
-	opkg_msg(NOTICE, "Removing corrupt package file %s.\n",
+        opkg_msg(NOTICE, "Removing corrupt package file %s.\n",
              pkg->local_filename);
-	unlink(pkg->local_filename);
-	return err;
+        unlink(pkg->local_filename);
+        if (local_sig_filename && file_exists(local_sig_filename))
+        {
+            opkg_msg(NOTICE, "Removing unmatched signature file %s.\n",
+                 local_sig_filename);
+            unlink(local_sig_filename);
+        }
     }
     else
     {
 	opkg_msg(NOTICE, "Ignored %s checksum mismatch.\n",
              pkg->local_filename);
-        return 0;
+        err = 0;
     }
+    free(local_sig_filename);
+    return err;
 }
